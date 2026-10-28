@@ -6,7 +6,7 @@ This repository documents the walkthrough and proof of concept (PoC) for PortSwi
 
  Vulnerability Overview
 
-The target application contains a business logic vulnerability within its password reset functionality. Specifically, when a user submits a password reset request via `POST /forgot-password`, the application fails to verify whether the submitted `temp-forgot-password-token` parameter matches the target user account or if the parameter is populated at all. 
+The target application contains a business logic vulnerability within its password reset functionality. Specifically, when a user submits a password reset request via `POST /forgot-password`, the application accepts a reset token from the URL query string but fails to verify it before processing the reset request. In addition, the `username` parameter is not bound to the authenticated session and can be modified by an attacker.
 
 As a result, an attacker can modify the `username` field in the request body to reset any arbitrary user's password without providing a valid reset token.
 
@@ -21,7 +21,7 @@ As a result, an attacker can modify the `username` field in the request body to 
 3. In Burp Suite, open **Proxy > HTTP history** to examine the HTTP traffic.
 4. Locate the `POST /forgot-password?temp-forgot-password-token=...` request and send it to **Burp Repeater**.
 
-![Inspecting HTTP History in Burp Proxy](Screenshot_2026-09-25_15-36-12_2.png)
+![Inspecting HTTP History in Burp Proxy](Screenshot_2026-09-25_15-36-12.png)
 
 ---
 
@@ -31,7 +31,7 @@ As a result, an attacker can modify the `username` field in the request body to 
 2. Delete the value of the `temp-forgot-password-token` parameter in both locations (URL and body).
 3. Click **Send**. The application returns a `302 Found` response, confirming that the backend does not validate the presence or validity of the token during password submission.
 
-![Testing Token Validation in Repeater](Screenshot_2026-09-25_15-36-43_2.png)
+![Testing Token Validation in Repeater](Screenshot_2026-09-25_15-36-43.png)
 
 ---
 
@@ -43,7 +43,7 @@ As a result, an attacker can modify the `username` field in the request body to 
 4. Set `new-password-1` and `new-password-2` to your desired new password (e.g., `test`).
 5. Send the request to update the target account's credentials.
 
-![Modifying Target Username and Password in Repeater](Screenshot_2026-09-25_15-36-56_2.png)
+![Modifying Target Username and Password in Repeater](Screenshot_2026-09-25_15-36-56.png)
 
 ---
 
@@ -51,7 +51,7 @@ As a result, an attacker can modify the `username` field in the request body to 
 
 1. Right-click the request in Repeater and select **Copy URL in browser** / **Repeat request in browser** (or navigate using a proxy-configured browser window) to verify the request state.
 
-![Repeating Request in Browser](Screenshot_2026-09-25_15-37-31_2.png)
+![Repeating Request in Browser](Screenshot_2026-09-25_15-37-31.png)
 
 ---
 
@@ -61,4 +61,4 @@ As a result, an attacker can modify the `username` field in the request body to 
 2. Log in using the username `carlos` and the new password set in Step 3 (`test`).
 3. Click **My account** to confirm successful account takeover and solve the lab.
 
-![Lab Solved Confirmation](Screenshot_2026-09-25_15-38-23_2.png)
+![Lab Solved Confirmation](Screenshot_2026-09-25_15-38-23.png)
